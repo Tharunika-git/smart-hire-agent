@@ -1,65 +1,153 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  const [keyword, setKeyword] = useState("");
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const runAgent = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`/api/process?keyword=${keyword}`);
+      const data = await res.json();
+
+      setJobs(data.jobs || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f5f7fb",
+        padding: "40px 20px",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+        {/* HEADER */}
+        <h1 style={{ fontSize: "32px", marginBottom: "10px" }}>
+          🚀 SmartHire Agent
+        </h1>
+        <p style={{ color: "#666", marginBottom: "30px" }}>
+          AI-powered job intelligence system
+        </p>
+
+        {/* INPUT */}
+        <div style={{ display: "flex", gap: "10px", marginBottom: "30px" }}>
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="Enter job keyword (e.g. frontend)"
+            style={{
+              flex: 1,
+              padding: "12px",
+              borderRadius: "8px",
+              border: "1px solid #ccc",
+            }}
+          />
+
+          <button
+            onClick={runAgent}
+            style={{
+              background: "#2563eb",
+              color: "#fff",
+              padding: "12px 20px",
+              borderRadius: "8px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            {loading ? "Running..." : "Run Agent"}
+          </button>
+        </div>
+
+        {/* 🔥 STATS BAR */}
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            marginBottom: "30px",
+          }}
+        >
+          <div style={cardStat}>
+            📊 Total Jobs: <strong>{jobs.length}</strong>
+          </div>
+
+          <div style={cardStat}>
+            🔍 Keyword: <strong>{keyword || "None"}</strong>
+          </div>
+
+          <div style={cardStat}>
+            ⚡ Status: <strong>{loading ? "Running" : "Idle"}</strong>
+          </div>
+        </div>
+
+        {/* 🔥 SECTION TITLE */}
+        <h2 style={{ marginBottom: "15px" }}>📌 Job Results</h2>
+
+        {/* JOB GRID */}
+        {jobs.length === 0 ? (
+          <p style={{ color: "#777" }}>
+            🚀 No jobs yet. Try searching "frontend" or "backend"
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+              gap: "20px",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {jobs.map((job, index) => (
+              <div
+                key={index}
+                style={{
+                  background: "#fff",
+                  padding: "20px",
+                  borderRadius: "12px",
+                  boxShadow: "0 6px 15px rgba(0,0,0,0.08)",
+                }}
+              >
+                <h3>{job.Role}</h3>
+
+                <p>🆔 Post ID: {job.PostID}</p>
+                <p>🏢 Company: {job.Company}</p>
+                <p>📍 Location: {job.Location}</p>
+                <p>
+                  🛠 Skills: {job.PrimarySkills?.join(", ") || "N/A"}
+                </p>
+                <p>
+                  ➕ Secondary: {job.SecondarySkills?.join(", ") || "N/A"}
+                </p>
+                <p>📅 Experience: {job.Experience}</p>
+                <p>🎓 Intern: {job.Intern}</p>
+                <p>🔥 Hiring: {job.HiringIntent}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 🔥 FOOTER */}
+        <div style={{ marginTop: "50px", color: "#888" }}>
+          Built with ❤️ using Lyzr
         </div>
-      </main>
+      </div>
     </div>
   );
 }
+
+/* 🔥 STATS STYLE */
+const cardStat = {
+  background: "#fff",
+  padding: "12px 18px",
+  borderRadius: "10px",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+};
